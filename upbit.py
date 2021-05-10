@@ -1,23 +1,54 @@
+#참고링크:https://wikidocs.net/31063
+
+#설치
+#pip install pyupbit
+#pip install -U pyupbit
+
 import pyupbit
+import time
+import json
+import os
+def cls():
+    os.system('cls' if os.name=='nt' else 'clear')
 
-df = pyupbit.get_ohlcv("KRW-BTC", count=200)
-# print(df.head())
+import datetime
 
-window = 252
-peak = df['close'].rolling(window, min_periods=1).max()
-drawdown = df['close'] / peak - 1.0
-max_dd = drawdown.rolling(window, min_periods=1).min()
+def dateToStr(date):
+    return date.strftime("%Y-%m-%d %H:%M:%S")
 
-max_dd_min = max_dd.min()
-print(max_dd_min)
-print(max_dd[max_dd == max_dd_min])
+def strToDate(str):
+    return datetime.datetime.strptime(str, "%Y-%m-%d %H:%M:%S")
+
+def loadData(date):
+    data = pyupbit.get_ohlcv("KRW-BTC", interval="days", count=100, to=dateToStr(date))
+    #data = pyupbit.get_ohlcv("KRW-MBL", interval="minute1", count=12, to=dateToStr(date))
+    #data = pyupbit.get_ohlcv("KRW-MBL", interval="minute1")
+    return data
+
+date = datetime.datetime.now()
+
+data = loadData(date)
 
 
-import matplotlib.pyplot as plt
-plt.figure(figsize=(9, 7))
-plt.subplot(211)
-df['close'].plot(label='BTC', title='BTC MDD', grid=True, legend=True)
-plt.subplot(212)
-drawdown.plot(c='blue', label='BTC DD', grid=True, legend=True)
-max_dd.plot(c='red', label='BTC MDD', grid=True, legend=True)
-plt.show()
+
+list = []
+while True:
+    data = loadData(date)
+
+    for i in reversed(range(0, len(data))):
+        #open, high, low, close
+        if i == 0 and len(data) >= 100:
+            break
+        if data.index[i] < strToDate("2019-08-01 09:00:00"):
+            break
+        str = "{0}\t{1}\t{2}\t{3}\t{4}".format(data.index[i].strftime("%Y-%m-%d"), data.open[i], data.high[i], data.low[i], data.close[i])
+        list.append(str)
+    if len(data) >= 100:
+        date = data.index[0]
+        time.sleep(0.1)
+    else:
+        break
+list.reverse()
+for i in range(0, len(list)):
+    print(list[i])
+
