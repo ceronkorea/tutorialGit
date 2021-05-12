@@ -19,6 +19,3 @@ plt.subplot(212)
 drawdown.plot(c='blue', label='KOSPI DD', grid=True, legend=True)
 max_dd.plot(c='red', label='KOSPI MDD', grid=True, legend=True)
 plt.show()
-
-
-
